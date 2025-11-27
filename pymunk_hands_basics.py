@@ -147,7 +147,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
           current_tone.stop()
 
         current_tone = play_tone(note)
-
+        current_tone.set_volume()
         ball_color = (math.fabs(new_color_x), math.fabs(new_color_y), 0)
 
         # Actualizar posición del objeto en Pymunk
