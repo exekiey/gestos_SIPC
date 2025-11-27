@@ -10,7 +10,6 @@ import pygame
 import pymunk
 import math
 # import re
-#yuki
 
 
 model_path = 'hand_landmarker.task'
@@ -81,13 +80,13 @@ import pygame
 import numpy as np
 
 def play_tone(freq: float):
-    pygame.mixer.init(frequency=44100, size=-16, channels=2)  # stereo
+    pygame.mixer.init(frequency=44100, size=-16, channels=2)
     sample_rate = 44100
-    duration = 1.0
+    duration = 0.1
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
     wave = 32767 * np.sin(2 * np.pi * freq * t)
     wave = wave.astype(np.int16)
-    stereo_wave = np.column_stack((wave, wave))  # make it 2D for stereo
+    stereo_wave = np.column_stack((wave, wave))
     sound = pygame.sndarray.make_sound(stereo_wave)
     sound.play(loops=-1)
     return sound
@@ -103,6 +102,9 @@ with HandLandmarker.create_from_options(options) as landmarker:
   # ...
   cap = cv2.VideoCapture(0)
   running = True
+
+  current_tone = None
+
   while cap.isOpened() and running:
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -118,7 +120,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
     landmarker.detect_async(mp_image, frame_timestamp_ms)
 
     ball_color = (0, 0, 0)
-
+    
     if detection_result is not None:
       image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
       
@@ -141,9 +143,11 @@ with HandLandmarker.create_from_options(options) as landmarker:
         
         note = value_to_note_frequency(lerped_y_value)
 
-        tone = play_tone(note)
+        if current_tone is not None:
+          current_tone.stop()
 
-        tone.stop()
+        current_tone = play_tone(note)
+
         ball_color = (math.fabs(new_color_x), math.fabs(new_color_y), 0)
 
         # Actualizar posición del objeto en Pymunk
@@ -156,7 +160,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
     pygame.draw.circle(screen, ball_color, (int(body.position.x), int(body.position.y)), int(circle.radius))
     
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(420)
 
     cv2.imshow('MediaPipe Hands', image)
     if cv2.waitKey(5) & 0xFF == 27:
