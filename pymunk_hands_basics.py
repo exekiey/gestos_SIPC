@@ -10,7 +10,7 @@ import pygame
 import pymunk
 import math
 # import re
-
+#yuki
 
 
 model_path = 'hand_landmarker.task'
